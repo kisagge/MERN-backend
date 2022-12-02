@@ -29,6 +29,15 @@ const getPost = async (req, res) => {
 const createPost = async (req, res) => {
   const { name, description } = req.body;
 
+  // Validation
+  if (!req.body.name) {
+    return res.status(409).json({ error: "Please enter a name" });
+  }
+
+  if (!req.body.description) {
+    return res.status(409).json({ error: "Please enter a description" });
+  }
+
   // add post to db
   try {
     const post = await Post.create({
@@ -62,8 +71,17 @@ const deletePost = async (req, res) => {
 const updatePost = async (req, res) => {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  // Validation
+  if (!mongoose.Types.ObjectId.isValid(id) || !req.body._id) {
     return res.status(404).json({ error: "No such post" });
+  }
+
+  if (!req.body.name) {
+    return res.status(409).json({ error: "Please enter a name" });
+  }
+
+  if (!req.body.description) {
+    return res.status(409).json({ error: "Please enter a description" });
   }
 
   const post = await Post.findOneAndUpdate({ _id: id }, { ...req.body });
@@ -71,7 +89,6 @@ const updatePost = async (req, res) => {
   if (!post) {
     return res.status(404).json({ error: "No such post" });
   }
-
   res.status(200).json(post);
 };
 
