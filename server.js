@@ -1,14 +1,31 @@
 require("dotenv").config();
 
 const express = require("express");
+const cors = require("cors");
 const mongoose = require("mongoose");
 const postsRoutes = require("./routes/posts");
+
+// whitelist
+const whitelist = ["http://localhost:3002"];
+
+// cors option
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not Allowed Origin!"));
+    }
+  },
+};
 
 // express app
 const app = express();
 
 // middleware
 app.use(express.json());
+
+app.use(cors(corsOptions));
 
 app.use((req, res, next) => {
   console.log(req.path, req.method);
