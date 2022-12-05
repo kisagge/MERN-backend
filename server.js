@@ -3,7 +3,10 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+
+// routes
 const postsRoutes = require("./routes/posts");
+const userRoutes = require("./routes/user");
 
 // whitelist
 const whitelist = ["http://localhost:3002"];
@@ -34,6 +37,7 @@ app.use((req, res, next) => {
 
 // routes
 app.use("/api/posts", postsRoutes);
+app.use("/api/user", userRoutes);
 
 // connect to db
 mongoose

@@ -54,6 +54,7 @@ const getPosts = async (req, res) => {
       })
       .skip(hidePost)
       .limit(maxPost);
+
     const result = {
       posts,
       startPage,
