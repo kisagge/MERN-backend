@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const Schema = mongoose.Schema;
 const saltRounds = 10;
@@ -19,7 +20,6 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
-    maxlength: 15,
   },
   role: {
     type: Number,
@@ -51,11 +51,21 @@ userSchema.pre("save", function (next) {
   }
 });
 
-userSchema.methods.comparePassword = function (plainPassword) {
+userSchema.methods.comparePassword = async function (plainPassword) {
   //plainPassword를 암호화해서 현재 비밀번호화 비교
-  return bcrypt
-    .compare(plainPassword, this.password)
-    .then((isMatch) => isMatch)
+  try {
+    const isMatch = await bcrypt.compare(plainPassword, this.password);
+    return isMatch;
+  } catch (err) {
+    return err;
+  }
+};
+
+userSchema.methods.generateToken = function () {
+  const token = jwt.sign(this._id.toHexString(), "accessToken");
+  this.token = token;
+  return this.save()
+    .then((user) => user)
     .catch((err) => err);
 };
 

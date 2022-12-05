@@ -17,6 +17,38 @@ const registerUser = async (req, res) => {
   }
 };
 
+// signIn User
+const signInUser = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      userId: req.body.userId,
+    });
+    if (!user) {
+      return res.status(401).json({ result: false, error: "Not exist user" });
+    }
+
+    const isMatched = await user.comparePassword(req.body.password);
+
+    if (!isMatched) {
+      return res
+        .status(401)
+        .json({ result: false, error: "Password is not matched" });
+    }
+
+    // 비밀번호 일치시 jwt 토큰 생성
+    const genToken = await user.generateToken();
+    console.log(genToken);
+    if (genToken) {
+      res.status(200).json({ result: true, token: genToken.token });
+    } else {
+      res.status(401).json({ result: false, error: "Sign in failed" });
+    }
+  } catch (err) {
+    res.status(401).json({ result: false, error: "Sign in failed" });
+  }
+};
+
 module.exports = {
   registerUser,
+  signInUser,
 };
