@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 
 // routes
@@ -29,12 +30,23 @@ const app = express();
 // middleware
 app.use(express.json());
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.use(cookieParser());
 
 app.use((req, res, next) => {
-  console.log(req.path, req.method);
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With,content-type, Authorization"
+  );
   next();
 });
 

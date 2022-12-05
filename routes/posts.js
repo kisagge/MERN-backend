@@ -6,6 +6,7 @@ const {
   deletePost,
   updatePost,
 } = require("../controllers/postController");
+const { ensureAuthorized } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.get("/", getPosts);
 router.get("/:id", getPost);
 
 // POST a new post
-router.post("/", createPost);
+router.post("/", ensureAuthorized, createPost);
 
 // DELETE a new post
 router.delete("/:id", deletePost);

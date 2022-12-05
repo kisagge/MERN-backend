@@ -93,6 +93,7 @@ const getPost = async (req, res) => {
 
 // Create a new post
 const createPost = async (req, res) => {
+  const { token } = req;
   const { name, description } = req.body;
 
   // Validation

@@ -39,7 +39,10 @@ const signInUser = async (req, res) => {
     const genToken = await user.generateToken();
     console.log(genToken);
     if (genToken) {
-      res.status(200).json({ result: true, token: genToken.token });
+      return res
+        .cookie("accessToken", genToken.token)
+        .status(200)
+        .json({ result: true, token: genToken.token });
     } else {
       res.status(401).json({ result: false, error: "Sign in failed" });
     }
@@ -48,7 +51,37 @@ const signInUser = async (req, res) => {
   }
 };
 
+function ensureAuthorized(req, res, next) {
+  const bearerHeader = req.headers.authorization;
+  if (typeof bearerHeader !== "undefined") {
+    const bearerToken = bearerHeader.split(" ")[1];
+    req.token = bearerToken;
+    next();
+  } else {
+    res.send(403);
+  }
+}
+// Get User Info
+const getMyInfo = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      token: req.token,
+    });
+    res.status(200).json({
+      result: true,
+      data: user,
+    });
+  } catch (err) {
+    res.status(401).json({
+      result: false,
+      error: err,
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   signInUser,
+  ensureAuthorized,
+  getMyInfo,
 };
