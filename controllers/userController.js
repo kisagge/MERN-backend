@@ -11,9 +11,21 @@ const registerUser = async (req, res) => {
       email,
       password,
     });
+
     res.status(200).json(user);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    let errorMessage = "";
+    if (error.message.includes("E11000")) {
+      if (error.message.includes("userId")) {
+        errorMessage = "User id is duplicated";
+      } else if (error.message.includes("email")) {
+        errorMessage = "Email is duplicated";
+      }
+    } else {
+      errorMessage = error.message;
+    }
+
+    res.status(400).json({ result: false, error: errorMessage });
   }
 };
 
