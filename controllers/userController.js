@@ -79,9 +79,18 @@ const getMyInfo = async (req, res) => {
     const user = await User.findOne({
       token: req.token,
     });
+
+    if (!user) {
+      return res.status(403).json({ result: false, error: "Invalid user" });
+    }
+
     res.status(200).json({
       result: true,
-      data: user,
+      data: {
+        userId: user.userId,
+        email: user.email,
+        _id: user._id,
+      },
     });
   } catch (err) {
     res.status(401).json({

@@ -6,8 +6,8 @@ const User = require("../models/userModel");
 const paging = (page, totalPost) => {
   const maxPost = 5;
   const maxPage = 10;
-  let currentPage = page ? parseInt(page) : 1;
-  const hidePost = page === 1 ? 0 : (page - 1) * maxPost;
+  let currentPage = isNaN(parseInt(page)) ? 1 : parseInt(page);
+  const hidePost = page == 1 ? 0 : (page - 1) * maxPost;
   const totalPage = Math.ceil(totalPost / maxPost);
 
   if (currentPage > totalPage) {

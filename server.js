@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 // routes
 const postsRoutes = require("./routes/posts");
 const userRoutes = require("./routes/user");
+const commentsRoutes = require("./routes/comments");
 
 // whitelist
 const whitelist = ["http://localhost:3002"];
@@ -53,6 +54,7 @@ app.use((req, res, next) => {
 // routes
 app.use("/api/posts", postsRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/comments", commentsRoutes);
 
 // connect to db
 mongoose
