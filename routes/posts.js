@@ -5,8 +5,9 @@ const {
   getPost,
   deletePost,
   updatePost,
+  getUserIdForPost,
+  getPostMiddle,
 } = require("../controllers/postController");
-const { ensureAuthorized } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -14,15 +15,15 @@ const router = express.Router();
 router.get("/", getPosts);
 
 // GET a single post
-router.get("/:id", getPost);
+router.get("/:id", getPostMiddle, getPost);
 
 // POST a new post
-router.post("/", ensureAuthorized, createPost);
+router.post("/", getUserIdForPost, createPost);
 
 // DELETE a new post
-router.delete("/:id", deletePost);
+router.delete("/:id", getUserIdForPost, deletePost);
 
 // UPDATE a new post
-router.patch("/:id", updatePost);
+router.patch("/:id", getUserIdForPost, updatePost);
 
 module.exports = router;

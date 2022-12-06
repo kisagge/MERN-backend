@@ -1,5 +1,6 @@
 const Post = require("../models/postModel");
 const mongoose = require("mongoose");
+const User = require("../models/userModel");
 
 // Post Paging
 const paging = (page, totalPost) => {
@@ -23,6 +24,27 @@ const paging = (page, totalPost) => {
   return { startPage, endPage, hidePost, maxPost, totalPage, currentPage };
 };
 
+// Get user id middle function
+const getUserIdForPost = async (req, res, next) => {
+  const bearerHeader = req.headers.authorization;
+  if (typeof bearerHeader !== "undefined") {
+    const bearerToken = bearerHeader.split(" ")[1];
+
+    const user = await User.findOne({
+      token: bearerToken,
+    });
+
+    if (!user) {
+      return res.status(403).json({ result: false, error: "No such user" });
+    }
+
+    req.userId = user.userId;
+    next();
+  } else {
+    res.send(403);
+  }
+};
+
 // Get all posts
 const getPosts = async (req, res) => {
   const keyword = req.query.keyword ?? "";
@@ -38,11 +60,14 @@ const getPosts = async (req, res) => {
         { description: { $regex: keywordRegex, $options: "i" } },
       ],
     }).countDocuments({});
+
     if (!totalPost) {
       throw Error();
     }
+
     let { startPage, endPage, hidePost, maxPost, totalPage, currentPage } =
       paging(page, totalPost);
+
     const posts = await Post.find({
       $or: [
         { name: { $regex: keywordRegex, $options: "i" } },
@@ -76,6 +101,7 @@ const getPosts = async (req, res) => {
 
 // Get a single post
 const getPost = async (req, res) => {
+  const userId = req.userId;
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -88,12 +114,39 @@ const getPost = async (req, res) => {
     return res.status(404).json({ error: "No such post" });
   }
 
-  res.status(200).json(post);
+  res.status(200).json({
+    result: true,
+    data: {
+      ...post._doc,
+      isAbleModified: userId && userId === post.userId,
+    },
+  });
+};
+
+// Get a single post middle function
+const getPostMiddle = async (req, res, next) => {
+  const bearerHeader = req.headers.authorization;
+  if (typeof bearerHeader !== "undefined") {
+    const bearerToken = bearerHeader.split(" ")[1];
+
+    const user = await User.findOne({
+      token: bearerToken,
+    });
+
+    if (!user) {
+      req.userId = null;
+    } else {
+      req.userId = user.userId;
+    }
+    next();
+  } else {
+    return res.status(403).json({ result: false });
+  }
 };
 
 // Create a new post
 const createPost = async (req, res) => {
-  const { token } = req;
+  const userId = req.userId;
   const { name, description } = req.body;
 
   // Validation
@@ -110,10 +163,11 @@ const createPost = async (req, res) => {
     const post = await Post.create({
       name,
       description,
+      userId,
     });
-    res.status(200).json(post);
+    res.status(200).json({ result: true, data: post });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ result: false, error: error.message });
   }
 };
 
@@ -123,6 +177,12 @@ const deletePost = async (req, res) => {
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ error: "No such post" });
+  }
+
+  const isAbleDeleted = (await Post.findById(id)).userId === req.userId;
+
+  if (!isAbleDeleted) {
+    return res.status(403).json({ result: false, error: "Invalid user id" });
   }
 
   const post = await Post.findOneAndDelete({ _id: id });
@@ -151,6 +211,12 @@ const updatePost = async (req, res) => {
     return res.status(409).json({ error: "Please enter a description" });
   }
 
+  const isAbleUpdated = (await Post.findById(id)).userId === req.userId;
+
+  if (!isAbleUpdated) {
+    return res.status(403).json({ result: false, error: "Invalid user id" });
+  }
+
   const post = await Post.findOneAndUpdate({ _id: id }, { ...req.body });
 
   if (!post) {
@@ -162,7 +228,9 @@ const updatePost = async (req, res) => {
 module.exports = {
   getPosts,
   getPost,
+  getPostMiddle,
   createPost,
   deletePost,
   updatePost,
+  getUserIdForPost,
 };
