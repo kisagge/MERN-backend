@@ -11,27 +11,11 @@ const postsRoutes = require("./routes/posts");
 const userRoutes = require("./routes/user");
 const commentsRoutes = require("./routes/comments");
 
-// whitelist
-const whitelist = ["http://localhost:3002"];
-
-// cors option
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not Allowed Origin!"));
-    }
-  },
-};
-
 // express app
 const app = express();
 
 // middleware
 app.use(express.json());
-
-// app.use(cors(corsOptions));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
