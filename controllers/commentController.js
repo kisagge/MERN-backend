@@ -1,7 +1,6 @@
 const Comment = require("../models/commentModel");
 const User = require("../models/userModel");
 const mongoose = require("mongoose");
-const { find } = require("../models/commentModel");
 
 // get user id middle function
 const getUserIdForComment = async (req, res, next) => {
@@ -24,73 +23,15 @@ const getUserIdForComment = async (req, res, next) => {
   }
 };
 
-// comment paging
-const paging = (page, totalComment) => {
-  const maxComment = 10;
-  const maxPage = 10;
-  let currentPage = isNaN(parseInt(page)) ? 1 : parseInt(page);
-  const hideComment = currentPage === 1 ? 0 : (currentPage - 1) * maxComment;
-  const totalPage = Math.ceil(totalComment / maxComment);
-
-  if (currentPage > totalPage) {
-    currentPage = totalPage;
-  }
-
-  const startPage = Math.floor((currentPage - 1) / maxPage) * maxPage + 1;
-  let endPage = startPage + maxPage - 1;
-
-  if (endPage > totalPage) {
-    endPage = totalPage;
-  }
-
-  return {
-    startPage,
-    endPage,
-    hideComment,
-    maxComment,
-    totalPage,
-    currentPage,
-  };
-};
-
 // Get comment list
 const getComments = async (req, res) => {
-  const page = req.query.page ?? 1;
   const { postId } = req.params;
   const userId = req.userId;
 
   try {
-    const totalComments = await Comment.find({ postId }).countDocuments({});
-
-    if (!totalComments) {
-      return res.status(200).json({
-        result: true,
-        data: {
-          comments: [],
-          startPage: 1,
-          endPage: 1,
-          totalPage: 1,
-          currentPage: 1,
-        },
-        error: null,
-      });
-    }
-
-    const {
-      startPage,
-      endPage,
-      hideComment,
-      maxComment,
-      totalPage,
-      currentPage,
-    } = paging(page, totalComments);
-
     const comments = await Comment.find({
       postId,
-    })
-      .sort({ createdAt: -1 })
-      .skip(hideComment)
-      .limit(maxComment);
+    });
 
     const commentsByUser = comments.map((comment) => {
       return {
@@ -103,10 +44,6 @@ const getComments = async (req, res) => {
       result: true,
       data: {
         comments: commentsByUser,
-        startPage,
-        endPage,
-        totalPage,
-        currentPage,
       },
       error: null,
     });
@@ -138,12 +75,21 @@ const createComment = async (req, res) => {
   }
 
   try {
-    await Comment.create({
+    const comment = await Comment.create({
       content: req.body.content,
       postId,
       userId,
     });
-    res.status(200).json({ result: true, error: null });
+    res.status(200).json({
+      result: true,
+      error: null,
+      data: {
+        comment: {
+          ...comment._doc,
+          isAbleModified: true,
+        },
+      },
+    });
   } catch (error) {
     res.status(400).json({
       result: false,

@@ -49,7 +49,6 @@ const signInUser = async (req, res) => {
 
     // 비밀번호 일치시 jwt 토큰 생성
     const genToken = await user.generateToken();
-    console.log(genToken);
     if (genToken) {
       return res
         .cookie("accessToken", genToken.token)
