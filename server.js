@@ -11,6 +11,8 @@ const postsRoutes = require("./routes/posts");
 const userRoutes = require("./routes/user");
 const commentsRoutes = require("./routes/comments");
 
+const PORT = process.env.PORT || 4000;
+
 // express app
 const app = express();
 
@@ -45,7 +47,7 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     // listen for requests
-    app.listen(process.env.PORT, () => {
+    app.listen(PORT, () => {
       console.log("connect to db && listening on port", process.env.PORT);
     });
   })

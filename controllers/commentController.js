@@ -33,8 +33,6 @@ const getComments = async (req, res) => {
       postId,
     });
 
-    console.log(comments);
-
     const commentsByUser = comments.map((comment) => {
       return {
         ...comment._doc,
