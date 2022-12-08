@@ -33,9 +33,12 @@ const getComments = async (req, res) => {
       postId,
     });
 
+    console.log(comments);
+
     const commentsByUser = comments.map((comment) => {
       return {
         ...comment._doc,
+        like: comment._doc.like.length,
         isAbleModified: userId && comment.userId === userId,
       };
     });
@@ -86,6 +89,7 @@ const createComment = async (req, res) => {
       data: {
         comment: {
           ...comment._doc,
+          like: comment._doc.like.length,
           isAbleModified: true,
         },
       },
@@ -121,9 +125,40 @@ const deleteComment = async (req, res) => {
   res.status(200).json({ result: true, error: null });
 };
 
+const likeComment = async (req, res) => {
+  const userId = req.userId;
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ result: false, error: "No such comment" });
+  }
+
+  let likeList = (await Comment.findById(id)).like;
+
+  // 좋아요 되어있으면
+  if (likeList.includes(userId)) {
+    likeList = likeList.filter((like) => like !== userId);
+  } else {
+    likeList.push(userId);
+  }
+
+  await Comment.findOneAndUpdate({ _id: id }, { like: likeList });
+
+  const comment = await Comment.findById(id);
+
+  res.status(200).json({
+    result: true,
+    error: null,
+    data: {
+      like: comment.like.length,
+    },
+  });
+};
+
 module.exports = {
   getUserIdForComment,
   getComments,
   createComment,
   deleteComment,
+  likeComment,
 };

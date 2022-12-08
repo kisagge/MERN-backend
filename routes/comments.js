@@ -4,6 +4,7 @@ const {
   getComments,
   createComment,
   deleteComment,
+  likeComment,
 } = require("../controllers/commentController");
 
 const router = express.Router();
@@ -14,5 +15,7 @@ router.post("/:postId", getUserIdForComment, getComments);
 router.post("/create/:postId", getUserIdForComment, createComment);
 
 router.delete("/:id", getUserIdForComment, deleteComment);
+
+router.patch("/like/:id", getUserIdForComment, likeComment);
 
 module.exports = router;

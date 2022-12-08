@@ -19,9 +19,9 @@ const commentSchema = new Schema(
       maxlength: 100,
     },
     like: {
-      type: Number,
+      type: [String],
       required: true,
-      default: 0,
+      default: [],
     },
   },
   {
